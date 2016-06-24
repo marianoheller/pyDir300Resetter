@@ -1,10 +1,14 @@
 #ScriptName : resetter.py
+#TODO: 
+#		wifi connect
+#		make deamon that resets only when not pinging
 #---------------------
 import sys 							#to accept argv
 import argparse						#to parse argv
 import platform						#to detect linux or windows
 import json							#to parse username and password
 import os.path						#to check if file exists
+import textwrap
 from pprint import pprint			#for pretty print
 from selenium import webdriver
 
@@ -38,9 +42,14 @@ def check_exists_by_xpath(driver,xpath):
 print("")
 print("Starting DIR300 Resetter...")
 print("")
+availableWebDrivers =	"Available webdrivers: \n" \
+					 	"\tFirefox, \n\tFirefoxProfile, \n\tChrome, " \
+ 						"\n\tChromeOptions, \n\tIe, \n\tOpera, " \
+ 						"\n\tPhantomJS, \n\tRemote, \n\tDesiredCapabilities, " \
+ 						"\n\tActionChains, \n\tTouchActions, \n\tProxy"
 
 #parse argv
-parser = argparse.ArgumentParser(description='Dir300 resetter script.')
+parser = argparse.ArgumentParser(description='Dir300 resetter script.',epilog=availableWebDrivers)
 parser.add_argument("-d","--driver", nargs='?', default="firefox",help='Choose a webdriver.')
 parser.add_argument("-D","--driverdir", nargs='?', default="",help='Specify webdriver directory. REQUIRED with phantomJS on windows.')
 parser.add_argument("-f","--file", nargs='?', default=DEFAULT_FILE_NAME_DATA ,help='Specify json data file.')
