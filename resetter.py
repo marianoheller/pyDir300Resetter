@@ -31,6 +31,8 @@ def check_exists_by_xpath(driver,xpath):
         return False
     return True
 
+    
+
 #Code
 #---------------------
 print("")
@@ -42,6 +44,7 @@ parser = argparse.ArgumentParser(description='Dir300 resetter script.')
 parser.add_argument("-d","--driver", nargs='?', default="firefox",help='Choose a webdriver.')
 parser.add_argument("-D","--driverdir", nargs='?', default="",help='Specify webdriver directory.')
 parser.add_argument("-f","--file", nargs='?', default=DEFAULT_FILE_NAME_DATA ,help='Specify json data file.')
+parser.add_argument("-c","--cred", nargs='?', default=DEFAULT_FILE_NAME_DATA ,help='Specify credentials. Overrides json file.')
 args=parser.parse_args()
 print("Going to use webdriver: "+ args.driver)
 if args.driverdir != "":
@@ -98,6 +101,9 @@ else:	#windows
 #---------------------------------------------------------------
 mydriver.get(baseurl)
 mydriver.maximize_window()
+url_login = mydriver.current_url;
+print("Entering %s" %url_login)
+print("")
 #Clear Username TextBox if already allowed "Remember Me" & Write Username
 try:
     usernameTxtBox = WebDriverWait(mydriver, DELAY_ELEMENT).until(
@@ -110,7 +116,7 @@ except TimeoutException:
 usernameTxtBox.clear()
 usernameTxtBox.send_keys(username)
 print("Username cleared and written.")
-print("")
+print("-")
 
 #Clear Password TextBox if already allowed "Remember Me" & Write Password
 try:
@@ -124,7 +130,7 @@ except TimeoutException:
 passwordTxtBox.clear()
 passwordTxtBox.send_keys(password)
 print("Password cleared and written.")
-print("")
+print("-")
 
 #Locate and click Login button
 try:
@@ -140,7 +146,9 @@ print("Submited.")
 print("")
 
 #Redirecting to homepage
-print("Redirected.")
+url_homepage = mydriver.current_url;
+if ( url_homepage != url_login):
+	print("Redirected to %s" %url_homepage)
 #Check existence and click Reset button
 try:
     resetButton = WebDriverWait(mydriver, DELAY_ELEMENT).until(
