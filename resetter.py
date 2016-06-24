@@ -42,7 +42,7 @@ print("")
 #parse argv
 parser = argparse.ArgumentParser(description='Dir300 resetter script.')
 parser.add_argument("-d","--driver", nargs='?', default="firefox",help='Choose a webdriver.')
-parser.add_argument("-D","--driverdir", nargs='?', default="",help='Specify webdriver directory.')
+parser.add_argument("-D","--driverdir", nargs='?', default="",help='Specify webdriver directory. REQUIRED with phantomJS on windows.')
 parser.add_argument("-f","--file", nargs='?', default=DEFAULT_FILE_NAME_DATA ,help='Specify json data file.')
 parser.add_argument("-c","--cred", nargs='?',help='Specify credentials. Overrides json file. Format user:password')
 args=parser.parse_args()
@@ -105,12 +105,25 @@ if ( platform.system() == "Linux" ):
 		raise ValueError("El driver elegido no es un driver valido.")
 		sys.exit()
 else:	#windows
-	print("Running on Windows. Using default webdriver.")
-	print("Using webdriver: %s" %args.driverdir)
-	mydriver = webdriver.Firefox()
+	if (args.driver == "phantomjs"):
+		if args.driverdir is not "":
+			mydriver = webdriver.PhantomJS(args.driverdir)
+		else:
+			print("PhantomJS on windows requiers path.")
+			raise ValueError("PhantomJS on windows requiers -D option.")
+			sys.exit()
+	elif (args.driver == "firefox"):
+		if args.driverdir is not "":
+			mydriver = webdriver.Firefox(args.driverdir)
+		else:
+			mydriver = webdriver.Firefox()
+	else:
+		print("Wrong webdriver.")
+		raise ValueError("El driver elegido no es un driver valido.")
+		sys.exit()
 
 
-#Do the work
+#Do the web scraping
 #---------------------------------------------------------------
 mydriver.get(baseurl)
 mydriver.maximize_window()
