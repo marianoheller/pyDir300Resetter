@@ -10,13 +10,26 @@ from selenium import webdriver
 
 #Following are optional required
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import TimeoutException
 
 #Config
 #---------------------
 DEFAULT_FILE_NAME_DATA = "login_data.json"
+DELAY_ELEMENT = 10
 
+#Helpers
+#---------------------
+
+def check_exists_by_xpath(driver,xpath):
+    try:
+        driver.find_element_by_xpath(xpath)
+    except NoSuchElementException:
+        return False
+    return True
 
 #Code
 #---------------------
@@ -45,7 +58,7 @@ if os.path.isfile(args.file):
 
 else:
 	print("Buscando el archivo "+args.file)
-	print("Archivo de datos no encontrado.")
+	raise ValueError("Archivo de datos no encontrado.")
 	sys.exit()
 
 
@@ -73,6 +86,7 @@ if ( platform.system() == "Linux" ):
 			mydriver = webdriver.Firefox()
 	else:
 		print("Wrong webdriver.")
+		raise ValueError("El driver elegido no es un driver valido.")
 		sys.exit()
 else:	#windows
 	print("Running on Windows. Using default webdriver.")
@@ -81,26 +95,62 @@ else:	#windows
 
 
 #Do the work
+#---------------------------------------------------------------
 mydriver.get(baseurl)
 mydriver.maximize_window()
 #Clear Username TextBox if already allowed "Remember Me" & Write Username
-mydriver.find_element_by_xpath(xpaths['usernameTxtBox']).clear()
-mydriver.find_element_by_xpath(xpaths['usernameTxtBox']).send_keys(username)
+try:
+    usernameTxtBox = WebDriverWait(mydriver, DELAY_ELEMENT).until(
+            lambda driver : driver.find_element_by_xpath(xpaths['usernameTxtBox'])
+    )
+    print("Username textbox located")
+except TimeoutException:
+    print ("Loading took too much time!")
+    raise ValueError("Username textbox does not exist.")
+usernameTxtBox.clear()
+usernameTxtBox.send_keys(username)
 print("Username cleared and written.")
+print("")
 
 #Clear Password TextBox if already allowed "Remember Me" & Write Password
-mydriver.find_element_by_xpath(xpaths['passwordTxtBox']).clear()
-mydriver.find_element_by_xpath(xpaths['passwordTxtBox']).send_keys(password)
+try:
+    passwordTxtBox = WebDriverWait(mydriver, DELAY_ELEMENT).until(
+            lambda driver : driver.find_element_by_xpath(xpaths['passwordTxtBox'])
+    )
+    print("Password textbox located")
+except TimeoutException:
+    print ("Loading took too much time!")
+    raise ValueError("Password textbox does not exist.")
+passwordTxtBox.clear()
+passwordTxtBox.send_keys(password)
 print("Password cleared and written.")
+print("")
 
-#Click Login button
-mydriver.find_element_by_xpath(xpaths['submitButton']).click()
+#Locate and click Login button
+try:
+    submitButton = WebDriverWait(mydriver, DELAY_ELEMENT).until(
+            lambda driver : driver.find_element_by_xpath(xpaths['submitButton'])
+    )
+    print("Submit button located")
+except TimeoutException:
+    print ("Loading took too much time!")
+    raise ValueError("Submit button does not exist.")
+submitButton.click()
 print("Submited.")
+print("")
 
 #Redirecting to homepage
 print("Redirected.")
-#Click Reset button
-mydriver.find_element_by_xpath(xpaths['resetButton']).click()
+#Check existence and click Reset button
+try:
+    resetButton = WebDriverWait(mydriver, DELAY_ELEMENT).until(
+            lambda driver : driver.find_element_by_xpath(xpaths['resetButton'])
+    )
+    print("Reset button located")
+except TimeoutException:
+    print ("Loading took too much time!")
+    raise ValueError("Reset button does not exist. Possible wrong credentials.")
+resetButton.click()
 print("Clicked reset button.")
 print("")
 
