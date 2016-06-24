@@ -4,7 +4,7 @@ import sys 							#to accept argv
 import argparse						#to parse argv
 import platform						#to detect linux or windows
 import json							#to parse username and password
-import os.path
+import os.path						#to check if file exists
 from pprint import pprint			#for pretty print
 from selenium import webdriver
 
@@ -44,25 +44,38 @@ parser = argparse.ArgumentParser(description='Dir300 resetter script.')
 parser.add_argument("-d","--driver", nargs='?', default="firefox",help='Choose a webdriver.')
 parser.add_argument("-D","--driverdir", nargs='?', default="",help='Specify webdriver directory.')
 parser.add_argument("-f","--file", nargs='?', default=DEFAULT_FILE_NAME_DATA ,help='Specify json data file.')
-parser.add_argument("-c","--cred", nargs='?', default=DEFAULT_FILE_NAME_DATA ,help='Specify credentials. Overrides json file.')
+parser.add_argument("-c","--cred", nargs='?',help='Specify credentials. Overrides json file. Format user:password')
 args=parser.parse_args()
 print("Going to use webdriver: "+ args.driver)
 if args.driverdir != "":
     print ("Driverdir has been set (value is %s)" % args.driverdir)
-#detect data file (json)
-if os.path.isfile(args.file):
-	with open(args.file) as data_file:    
-	    data = json.load(data_file)
-	    print("")
-	    print("Loaded file %s" %args.file)
-	    print("Username: "+data["username"])
-	    print("Password: "+data["password"])
-	    print("")
 
-else:
-	print("Buscando el archivo "+args.file)
-	raise ValueError("Archivo de datos no encontrado.")
-	sys.exit()
+if args.cred is not None:
+	if (len(args.cred.split(":")) >= 2):
+		lista = args.cred.split(":")
+		data = {}
+		data["username"] = lista[0]
+		data["password"] = lista[1]
+	else:
+		print("Formate de credencial incorrecto. [user:password]")
+		print("Se ingreso: %s" %args.cred)
+		raise ValueError("Archivo de datos no encontrado.")
+		sys.exit()
+else:	
+	#detect data file (json)
+	if os.path.isfile(args.file):
+		with open(args.file) as data_file:    
+		    data = json.load(data_file)
+		    print("")
+		    print("Loaded file %s" %args.file)
+		    print("Username: "+data["username"])
+		    print("Password: "+data["password"])
+		    print("")
+
+	else:
+		print("Buscando el archivo "+args.file)
+		raise ValueError("Archivo de datos no encontrado.")
+		sys.exit()
 
 
 #Set variables
