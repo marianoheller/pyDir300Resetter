@@ -23,7 +23,7 @@ from selenium.common.exceptions import TimeoutException
 #Config
 #---------------------
 DEFAULT_FILE_NAME_DATA = "login_data.json"
-DELAY_ELEMENT = 10
+DELAY_ELEMENT = 50
 
 #Helpers
 #---------------------
@@ -35,7 +35,6 @@ def check_exists_by_xpath(driver,xpath):
         return False
     return True
 
-    
 
 #Code
 #---------------------
@@ -88,14 +87,26 @@ else:
 
 
 #Set variables
-baseurl = "http://localhost/index.php"
+baseurl = "http://192.168.0.1/login.php"
 username = data["username"]
 password = data["password"]
-xpaths = { 'usernameTxtBox' : "//input[@name='username']",
-           'passwordTxtBox' : "//input[@name='password']",
-           'submitButton' :   "//input[@name='login']",
-           'resetButton'  :	  "//button[@name='button']"
-         }
+# xpaths = { 'usernameTxtBox' : "//input[@name='username']",
+#            'passwordTxtBox' : "//input[@name='password']",
+#            'submitButton' :   "//input[@name='login']",
+#            'resetButton'  :	  "//button[@name='button']"
+#          }
+xpaths = { 'usernameTxtBox' : 	"id('box_header')/x:center/x:table/x:tbody/x:tr[1]/x:td[2]/x:input",
+            'passwordTxtBox' : 	"id('box_header')/x:center/x:table/x:tbody/x:tr[2]/x:td[2]/x:input",
+            'submitButton' :  	"id('box_header')/x:center/x:table/x:tbody/x:tr[2]/x:td[3]/x:input",
+            'resetButton'  :	"id('sidenav_container')/x:table/x:tbody/x:tr[2]/x:td/x:table/x:tbody/x:tr/x:td/x:input"
+          }
+
+xpaths = { 	'usernameTxtBox' : 	"//td[@id='box_header']/center/table/tbody/tr[1]/td[2]/input",
+			'passwordTxtBox' : 	"//td[@id='box_header']/center/table/tbody/tr[2]/td[2]/input",
+			'submitButton' :  	"//td[@id='box_header']/center/table/tbody/tr[2]/td[3]/input",
+			'resetButton'  :	"//td[@id='sidenav_container']/table/tbody/tr[2]/td/table/tbody/tr/td/input",
+			'countdownMarker' : "//td[@id='box_header']/center/table/tbody/tr[1]/td/input"
+			}
 
 #Detect OS to choose webdriver
 if ( platform.system() == "Linux" ):
@@ -126,6 +137,11 @@ else:	#windows
 			mydriver = webdriver.Firefox(args.driverdir)
 		else:
 			mydriver = webdriver.Firefox()
+	elif (args.driver == "chrome"):
+		if args.driverdir is not "":
+			mydriver = webdriver.Chrome(args.driverdir)
+		else:
+			mydriver = webdriver.Chrome()
 	else:
 		print("Wrong webdriver.")
 		raise ValueError("El driver elegido no es un driver valido.")
@@ -197,5 +213,30 @@ resetButton.click()
 print("Clicked reset button.")
 print("")
 
-print("Success!")
-print("")
+
+try:
+    WebDriverWait(mydriver, 3).until(EC.alert_is_present(),
+                                   'Timed out waiting for PA creation ' +
+                                   'confirmation popup to appear.')
+
+    alert = mydriver.switch_to_alert()
+    alert.accept()
+    print ("alert accepted")
+except TimeoutException:
+    print ("no alert")
+
+
+#Locate and click Login button
+try:
+    countdownMarker = WebDriverWait(mydriver, DELAY_ELEMENT).until(
+            lambda driver : driver.find_element_by_xpath(xpaths['countdownMarker'])
+    )
+    print("Submit button located")
+    print("")
+    print("Success!")
+    mydriver.quit()
+except TimeoutException:
+    print ("Loading took too much time!")
+    raise ValueError("Submit button does not exist.")
+
+
